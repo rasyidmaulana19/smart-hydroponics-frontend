@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Smart Hydroponics{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>📈 Analytics</h1>
+            <div>
+                <button class="btn btn-success" onclick="refreshAnalytics()">
+                    🔄 Refresh
+                </button>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#dateRangeModal">
+                    📅 Select Date Range
+                </button>
+            </div>
+        </div>
+        <p class="text-muted">Advanced analytics and insights from your hydroponic system</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card gradient-primary">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Avg. Temperature</h6>
+                    <h2 class="mt-2">24.5°C</h2>
+                </div>
+                <div class="sensor-icon">
+                    🌡️
+                </div>
+            </div>
+            <small class="opacity-75">±0.5°C from yesterday</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card gradient-info">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Avg. pH Level</h6>
+                    <h2 class="mt-2">6.2</h2>
+                </div>
+                <div class="sensor-icon">
+                    🧪
+                </div>
+            </div>
+            <small class="opacity-75">Optimal range: 5.5-6.5</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card gradient-success">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Avg. Humidity</h6>
+                    <h2 class="mt-2">72%</h2>
+                </div>
+                <div class="sensor-icon">
+                    💧
+                </div>
+            </div>
+            <small class="opacity-75">Ideal for growth</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card gradient-warning">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">System Uptime</h6>
+                    <h2 class="mt-2">99.8%</h2>
+                </div>
+                <div class="sensor-icon">
+                    ⏱️
+                </div>
+            </div>
+            <small class="opacity-75">Last 30 days</small>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card glass-card">
+            <div class="card-header border-0">
+                <h5 class="mb-0">📊 Temperature Trends (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="temperatureChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card glass-card">
+            <div class="card-header border-0">
+                <h5 class="mb-0">🧪 pH Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="phChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card glass-card">
+            <div class="card-header border-0">
+                <h5 class="mb-0">💧 Humidity & Water Levels</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="humidityChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card glass-card">
+            <div class="card-header border-0">
+                <h5 class="mb-0">📈 Growth Correlation</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="growthChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Date Range Modal -->
+<div class="modal fade" id="dateRangeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Date Range</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">From Date</label>
+                    <input type="date" class="form-control" id="fromDate" value="2025-01-01">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">To Date</label>
+                    <input type="date" class="form-control" id="toDate" value="2025-01-31">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="applyDateRange()">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshAnalytics() {
+    window.location.reload();
+}
+
+function applyDateRange() {
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+    alert(`Date range applied: ${fromDate} to ${toDate}`);
+    // In a real app, you would fetch new data based on the date range
+    $('#dateRangeModal').modal('hide');
+}
+
+// Initialize charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Temperature Chart
+    const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+    new Chart(tempCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Temperature (°C)',
+                data: [23, 24.5, 25, 24, 23.5, 24, 25.5],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // pH Chart
+    const phCtx = document.getElementById('phChart').getContext('2d');
+    new Chart(phCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Optimal (5.5-6.5)', 'Too Acidic', 'Too Alkaline'],
+            datasets: [{
+                data: [85, 10, 5],
+                backgroundColor: ['#43e97b', '#fa709a', '#ffd166']
+            }]
+        }
+    });
+
+    // Humidity Chart
+    const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+    new Chart(humidityCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Zone A', 'Zone B', 'Zone C', 'Zone D'],
+            datasets: [
+                {
+                    label: 'Humidity',
+                    data: [70, 75, 68, 72],
+                    backgroundColor: '#4facfe'
+                },
+                {
+                    label: 'Water Level',
+                    data: [85, 90, 80, 88],
+                    backgroundColor: '#00f2fe'
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Growth Chart
+    const growthCtx = document.getElementById('growthChart').getContext('2d');
+    new Chart(growthCtx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Growth Rate vs Temperature',
+                data: [
+                    {x: 22, y: 0.5},
+                    {x: 23, y: 0.7},
+                    {x: 24, y: 0.9},
+                    {x: 25, y: 0.8},
+                    {x: 26, y: 0.6}
+                ],
+                backgroundColor: '#fa709a'
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Growth Rate'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

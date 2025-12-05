@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Sensors - Smart Hydroponics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>📡 Sensors Monitoring</h1>
+            <div>
+                <button class="btn btn-success" onclick="refreshSensors()">
+                    🔄 Refresh
+                </button>
+                <a href="{{ backend_url }}/api/generate-dummy-data" target="_blank"
+                   class="btn btn-outline-success">
+                    📊 Add Test Sensors
+                </a>
+            </div>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+        
+        <!-- System Info -->
+        <div class="alert alert-info mb-4">
+            <h5>System Status</h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <p><strong>Backend URL:</strong><br>{{ backend_url }}</p>
+                </div>
+                <div class="col-md-3">
+                    <p><strong>Total Sensors:</strong><br>{{ total_sensors }}</p>
+                </div>
+                <div class="col-md-3">
+                    <p><strong>Active Sensors:</strong><br>{{ active_sensors }}</p>
+                </div>
+                <div class="col-md-3">
+                    <p><strong>Last Update:</strong><br><span id="current-time">Loading...</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sensor Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Total Sensors</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="display-2">{{ total_sensors }}</div>
+                <p class="text-muted">All Devices</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Active Sensors</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="display-2">{{ active_sensors }}</div>
+                <p class="text-muted">Online Now</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Temperature</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="display-2">{{ temperature_sensors }}</div>
+                <p class="text-muted">🌡️ Sensors</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">pH Sensors</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="display-2">{{ ph_sensors }}</div>
+                <p class="text-muted">🧪 Sensors</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sensors Grid -->
+<div class="row">
+    {% if sensors and sensors|length > 0 %}
+        {% for sensor_id, sensor in sensors.items() %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header 
+                    {% if sensor.get('type') == 'temperature' %}bg-danger text-white
+                    {% elif sensor.get('type') == 'ph' %}bg-primary text-white
+                    {% elif sensor.get('type') == 'humidity' %}bg-info text-white
+                    {% else %}bg-secondary text-white{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ sensor.get('name', 'Unnamed Sensor') }}</h5>
+                        <span class="badge bg-light text-dark">
+                            {{ sensor_id|truncate(8, True, '...') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if sensor.get('type') == 'temperature' %}
+                        <div class="display-1">🌡️</div>
+                        {% elif sensor.get('type') == 'ph' %}
+                        <div class="display-1">🧪</div>
+                        {% elif sensor.get('type') == 'humidity' %}
+                        <div class="display-1">💧</div>
+                        {% else %}
+                        <div class="display-1">📡</div>
+                        {% endif %}
+                    </div>
+                    
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <th width="40%">Type:</th>
+                            <td>
+                                <span class="badge bg-{% if sensor.get('type') == 'temperature' %}danger
+                                {% elif sensor.get('type') == 'ph' %}primary
+                                {% elif sensor.get('type') == 'humidity' %}info
+                                {% else %}secondary{% endif %}">
+                                    {{ sensor.get('type', 'unknown')|upper }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Location:</th>
+                            <td>{{ sensor.get('location', 'N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Current Value:</th>
+                            <td>
+                                <span class="display-4">{{ sensor.get('current_value', 'N/A') }}</span>
+                                <small class="text-muted">{{ sensor.get('unit', '') }}</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if sensor.get('status') == 'active' %}
+                                <span class="badge bg-success">ACTIVE</span>
+                                {% else %}
+                                <span class="badge bg-danger">INACTIVE</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Last Updated:</th>
+                            <td>
+                                {% if sensor.get('last_updated') %}
+                                <small>{{ sensor.last_updated|timestamp_to_datetime }}</small>
+                                {% else %}
+                                <small class="text-muted">Never</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-grid">
+                        <a href="{{ backend_url }}/api/sensor-history?format=json" 
+                           target="_blank"
+                           class="btn btn-outline-primary btn-sm">
+                            📈 View History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <div class="display-1">📡</div>
+                </div>
+                <h4 class="text-muted">No Sensors Found</h4>
+                <p class="mb-4">There are no sensors registered in the system yet.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ backend_url }}/api/generate-dummy-data" 
+                       target="_blank"
+                       class="btn btn-success">
+                        📊 Generate Sample Sensors
+                    </a>
+                    <a href="/test-backend" class="btn btn-outline-primary">
+                        🔧 Test Backend Connection
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">⚡ Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <button onclick="refreshSensors()" class="btn btn-outline-dark w-100">
+                            🔄 Refresh All
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ backend_url }}/api/generate-dummy-data" target="_blank"
+                           class="btn btn-outline-success w-100">
+                            📊 Add Test Data
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/dashboard" class="btn btn-outline-primary w-100">
+                            📊 Back to Dashboard
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ backend_url }}/api/sensors" target="_blank"
+                           class="btn btn-outline-info w-100">
+                            🔗 View API Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshSensors() {
+    window.location.reload();
+}
+
+// Update current time
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    const dateString = now.toLocaleDateString();
+    document.getElementById('current-time').textContent = `${dateString} ${timeString}`;
+}
+
+// Auto-refresh every 60 seconds
+setTimeout(refreshSensors, 60000);
+
+// Update time on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
+    
+    console.log('Sensors page loaded successfully');
+    console.log('Total sensors: {{ total_sensors }}');
+    console.log('Active sensors: {{ active_sensors }}');
+});
+</script>
+{% endblock %}

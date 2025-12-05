@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Smart Hydroponics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">📊 System Dashboard</h1>
+        
+        <!-- Debug Info -->
+        <div class="alert alert-info">
+            <h5>Debug Information</h5>
+            <p>Backend URL: {{ backend_url }}</p>
+            <p>Status Data: {{ status|tojson }}</p>
+            <p>Number of Sensors: {{ sensors|length }}</p>
+            <p>Users Count: {{ users_count }}</p>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- System Status -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">System Status</h5>
+            </div>
+            <div class="card-body">
+                {% if status and status.success %}
+                <div class="text-center">
+                    <div class="display-1 text-success mb-3">🟢</div>
+                    <h4>All Systems Operational</h4>
+                    <p class="text-muted">Last checked: {{ status.timestamp|timestamp_to_datetime }}</p>
+                </div>
+                {% else %}
+                <div class="text-center">
+                    <div class="display-1 text-danger mb-3">🔴</div>
+                    <h4>System Offline</h4>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Summary -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">👥 Users</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="display-2">{{ users_count }}</div>
+                <p class="text-muted">Total Users</p>
+                <a href="/users" class="btn btn-outline-success btn-sm">View All Users</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sensors Summary -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">📡 Sensors</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="display-2">{{ sensors|length }}</div>
+                <p class="text-muted">Active Sensors</p>
+                <a href="/sensors" class="btn btn-outline-info btn-sm">View All Sensors</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Sensor Data -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">🌡️ Recent Sensor Readings</h5>
+            </div>
+            <div class="card-body">
+                {% if sensors %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sensor ID</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Current Value</th>
+                                <th>Status</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sensor_id, sensor in sensors.items() %}
+                            <tr>
+                                <td><code>{{ sensor_id }}</code></td>
+                                <td>
+                                    <span class="badge bg-info">{{ sensor.type|upper }}</span>
+                                </td>
+                                <td>{{ sensor.location }}</td>
+                                <td>
+                                    <span class="display-6">{{ sensor.current_value }}</span>
+                                    <small class="text-muted">{{ sensor.unit }}</small>
+                                </td>
+                                <td>
+                                    {% if sensor.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ sensor.last_updated|timestamp_to_datetime }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">No sensor data available</p>
+                    <button class="btn btn-warning" onclick="generateDummyData()">
+                        Generate Sample Data
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">⚡ Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ backend_url }}/api/generate-dummy-data" target="_blank" 
+                           class="btn btn-outline-dark w-100">
+                            📊 Generate Test Data
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ backend_url }}/api/firebase-test" target="_blank"
+                           class="btn btn-outline-primary w-100">
+                            🔥 Test Firebase
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ backend_url }}" target="_blank"
+                           class="btn btn-outline-success w-100">
+                            🔗 Backend API
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button onclick="refreshDashboard()" 
+                                class="btn btn-outline-warning w-100">
+                            🔄 Refresh Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshDashboard() {
+    window.location.reload();
+}
+
+function generateDummyData() {
+    fetch('{{ backend_url }}/api/generate-dummy-data')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Dummy data generated successfully!');
+                refreshDashboard();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+        });
+}
+</script>
+{% endblock %}

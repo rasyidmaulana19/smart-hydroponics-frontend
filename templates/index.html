@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Smart Hydroponics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">🌱 Smart Hydroponics v1</h1>
+        <p class="lead">Real-time monitoring system for hydroponic farming</p>
+        
+        <div class="card mt-5">
+            <div class="card-body">
+                <h5 class="card-title">System Status</h5>
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card text-white bg-primary mb-3">
+                            <div class="card-body">
+                                <h5>Backend API</h5>
+                                <p id="backend-status">Checking...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white bg-info mb-3">
+                            <div class="card-body">
+                                <h5>Firebase</h5>
+                                <p id="firebase-status">Checking...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white bg-success mb-3">
+                            <div class="card-body">
+                                <h5>Frontend</h5>
+                                <p>🟢 Online</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <a href="/dashboard" class="btn btn-success btn-lg me-3">📊 Go to Dashboard</a>
+            <a href="/sensors" class="btn btn-outline-success btn-lg">📡 View Sensors</a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Check backend status on page load
+fetch('/health')
+    .then(response => response.json())
+    .then(data => {
+        const backendStatus = document.getElementById('backend-status');
+        const firebaseStatus = document.getElementById('firebase-status');
+        
+        if (data.backend_connected) {
+            backendStatus.innerHTML = '🟢 Connected';
+            backendStatus.style.color = 'white';
+            
+            // Test Firebase connection
+            fetch('/api/proxy/api/firebase-test')
+                .then(res => res.json())
+                .then(firebaseData => {
+                    firebaseStatus.innerHTML = '🟢 Connected';
+                    firebaseStatus.style.color = 'white';
+                })
+                .catch(() => {
+                    firebaseStatus.innerHTML = '🔴 Connection Failed';
+                    firebaseStatus.style.color = 'yellow';
+                });
+        } else {
+            backendStatus.innerHTML = '🔴 Not Connected';
+            backendStatus.style.color = 'yellow';
+            firebaseStatus.innerHTML = '⚠️ Backend Offline';
+            firebaseStatus.style.color = 'yellow';
+        }
+    });
+</script>
+{% endblock %}

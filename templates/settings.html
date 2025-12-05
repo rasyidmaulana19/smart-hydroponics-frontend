@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Smart Hydroponics{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>⚙️ System Settings</h1>
+            <div>
+                <button class="btn btn-success" onclick="saveSettings()">
+                    💾 Save Changes
+                </button>
+                <button class="btn btn-outline-secondary" onclick="resetSettings()">
+                    ↩️ Reset
+                </button>
+            </div>
+        </div>
+        <p class="text-muted">Configure your hydroponic system preferences</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: General Settings -->
+    <div class="col-md-8">
+        <div class="card glass-card mb-4">
+            <div class="card-header border-0">
+                <h5 class="mb-0">General Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">System Name</label>
+                        <input type="text" class="form-control" value="HydroponicPro v1.0">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Timezone</label>
+                        <select class="form-select">
+                            <option>UTC+07:00 (Jakarta, Bangkok)</option>
+                            <option>UTC+08:00 (Singapore, Manila)</option>
+                            <option>UTC+00:00 (London, Lisbon)</option>
+                            <option>UTC-05:00 (New York, Toronto)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Measurement Unit</label>
+                        <select class="form-select">
+                            <option>Metric (°C, cm, L)</option>
+                            <option>Imperial (°F, inches, gal)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Data Refresh Rate</label>
+                        <select class="form-select">
+                            <option>10 seconds</option>
+                            <option>30 seconds (Recommended)</option>
+                            <option>1 minute</option>
+                            <option>5 minutes</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Settings -->
+        <div class="card glass-card mb-4">
+            <div class="card-header border-0">
+                <h5 class="mb-0">Alert & Notification Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="emailAlerts" checked>
+                    <label class="form-check-label" for="emailAlerts">Email Alerts</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+                    <label class="form-check-label" for="pushNotifications">Push Notifications</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="smsAlerts">
+                    <label class="form-check-label" for="smsAlerts">SMS Alerts (Emergency Only)</label>
+                </div>
+                <hr>
+                <h6 class="mb-3">Alert Thresholds</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Max Temperature</label>
+                        <input type="number" class="form-control" value="30" step="0.5">
+                        <small class="text-muted">°C</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Min Temperature</label>
+                        <input type="number" class="form-control" value="20" step="0.5">
+                        <small class="text-muted">°C</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">pH Range</label>
+                        <input type="text" class="form-control" value="5.5 - 6.5">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: System Info & Actions -->
+    <div class="col-md-4">
+        <!-- System Information -->
+        <div class="card glass-card mb-4">
+            <div class="card-header border-0">
+                <h5 class="mb-0">System Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Software Version</small>
+                    <div class="fw-bold">HydroponicPro v1.2.3</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Last Updated</small>
+                    <div class="fw-bold">January 15, 2025</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Database Size</small>
+                    <div class="fw-bold">245.6 MB</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Uptime</small>
+                    <div class="fw-bold">24 days, 6 hours</div>
+                </div>
+                <button class="btn btn-outline-primary w-100" onclick="checkForUpdates()">
+                    🔄 Check for Updates
+                </button>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card glass-card border-danger">
+            <div class="card-header border-danger bg-danger bg-opacity-10">
+                <h5 class="mb-0 text-danger">⚠️ Danger Zone</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">These actions are irreversible. Proceed with caution.</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-danger" onclick="clearAllData()">
+                        🗑️ Clear All Data
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="resetSystem()">
+                        🔧 Factory Reset
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteSystem()">
+                        🗑️ Delete System
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal for Dangerous Actions -->
+<div class="modal fade" id="dangerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⚠️ Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="dangerMessage">Are you sure you want to perform this action? This cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDanger">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function saveSettings() {
+    alert('Settings saved successfully!');
+    // In a real app, send settings to backend
+}
+
+function resetSettings() {
+    if (confirm('Reset all settings to default?')) {
+        alert('Settings have been reset to default values.');
+    }
+}
+
+function checkForUpdates() {
+    alert('Checking for updates...\n\nYour system is up to date!');
+}
+
+function clearAllData() {
+    showDangerModal(
+        'Clear All Data',
+        'This will permanently delete all sensor data, logs, and reports. This action cannot be undone.',
+        function() {
+            alert('All data has been cleared.');
+            $('#dangerModal').modal('hide');
+        }
+    );
+}
+
+function resetSystem() {
+    showDangerModal(
+        'Factory Reset',
+        'This will reset all settings to factory defaults and clear all user data.',
+        function() {
+            alert('System has been reset to factory defaults.');
+            $('#dangerModal').modal('hide');
+        }
+    );
+}
+
+function deleteSystem() {
+    showDangerModal(
+        'Delete System',
+        'This will permanently delete the entire system configuration. You will need to set up everything again.',
+        function() {
+            alert('System has been deleted. Redirecting to setup...');
+            $('#dangerModal').modal('hide');
+            window.location.href = '/setup';
+        }
+    );
+}
+
+function showDangerModal(title, message, confirmCallback) {
+    document.getElementById('dangerMessage').textContent = message;
+    const modal = new bootstrap.Modal(document.getElementById('dangerModal'));
+    modal.show();
+    
+    // Set up confirm button
+    const confirmBtn = document.getElementById('confirmDanger');
+    confirmBtn.onclick = confirmCallback;
+}
+</script>
+{% endblock %}
